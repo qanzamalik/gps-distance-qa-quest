@@ -116,6 +116,9 @@ def truth_km(rows):
     for a, b in zip(real, real[1:]):
         if a["driver_id"] != b["driver_id"]:
             continue
+        gap = (datetime.fromisoformat(b["ts_utc"][:-1]) - datetime.fromisoformat(a["ts_utc"][:-1])).total_seconds()
+        if gap > 3600:
+            continue  # different trips: never join the end of one trip to the start of the next
         if geo.in_zone(a["lat"], a["lon"]) and geo.in_zone(b["lat"], b["lon"]):
             key = (a["driver_id"], local_day(a["ts_utc"]))
             totals[key] = totals.get(key, 0) + geo.haversine_m(a["lat"], a["lon"], b["lat"], b["lon"])

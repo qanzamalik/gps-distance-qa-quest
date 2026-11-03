@@ -9,6 +9,7 @@
 ```bash
 python generate_data.py     # creates data/pings_synthetic.csv (~2,775 pings) + truth file
 python reference_calc.py    # OLD calculation (wrong on purpose) -> km per driver per day
+python checker.py           # QA checker -> reports/checker_report.md
 ```
 
 ## Files
@@ -18,6 +19,9 @@ python reference_calc.py    # OLD calculation (wrong on purpose) -> km per drive
 | `geo.py` | Zone, road path, rules (100 m / 150 km/h / UTC+9) and geometry helpers |
 | `generate_data.py` | Seeded synthetic data with labelled faults |
 | `reference_calc.py` | The old, wrong calculation under test |
+| `rules.py` | Each case rule as a separate step (dedupe, order, noise, zone, local day) |
+| `checker.py` | QA tool: finds rule breaks, measures km impact of each, shows root-cause rows, self-checks against labels |
+| `reports/checker_report.md` | Latest checker output |
 | `data/pings_synthetic.csv` | Pings in arrival order; `fault_type` is the generator's label |
 | `data/truth_km_synthetic.csv` | Expected in-zone km per driver per local day |
 
