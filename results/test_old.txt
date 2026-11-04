@@ -1,0 +1,122 @@
+Calculation under test: old
+
+============================= test session starts ==============================
+collecting ... collected 8 items
+
+tests/test_regression.py::test_clean_track_baseline PASSED               [ 12%]
+tests/test_regression.py::test_gps_noise_off_road_is_ignored FAILED      [ 25%]
+tests/test_regression.py::test_gps_noise_too_fast_is_ignored FAILED      [ 37%]
+tests/test_regression.py::test_noise_on_first_ping_does_not_reject_good_pings FAILED [ 50%]
+tests/test_regression.py::test_duplicate_counts_once FAILED              [ 62%]
+tests/test_regression.py::test_late_ping_is_placed_by_its_own_timestamp FAILED [ 75%]
+tests/test_regression.py::test_distance_outside_zone_is_not_counted FAILED [ 87%]
+tests/test_regression.py::test_day_is_cut_at_local_midnight FAILED       [100%]
+
+=================================== FAILURES ===================================
+______________________ test_gps_noise_off_road_is_ignored ______________________
+
+    def test_gps_noise_off_road_is_ignored():
+        rows = [dict(r) for r in CLEAN]
+        rows[4]["lon"] = 127.0400  # ~880 m east of the road
+>       assert total(calculate(rows)) == pytest.approx(expected_km(CLEAN[:4] + CLEAN[5:]), abs=TOL_KM)
+E       assert 2.557 == 1.0007543398012493 ± 0.01
+E         
+E         comparison failed
+E         Obtained: 2.557
+E         Expected: 1.0007543398012493 ± 0.01
+
+tests/test_regression.py:61: AssertionError
+______________________ test_gps_noise_too_fast_is_ignored ______________________
+
+    def test_gps_noise_too_fast_is_ignored():
+        rows = [dict(r) for r in CLEAN]
+        rows[4]["lat"] = 37.5090  # on the road but 500 m ahead in 10 s = 180 km/h
+>       assert total(calculate(rows)) == pytest.approx(expected_km(CLEAN[:4] + CLEAN[5:]), abs=TOL_KM)
+E       assert 1.89 == 1.0007543398012493 ± 0.01
+E         
+E         comparison failed
+E         Obtained: 1.89
+E         Expected: 1.0007543398012493 ± 0.01
+
+tests/test_regression.py:67: AssertionError
+_____________ test_noise_on_first_ping_does_not_reject_good_pings ______________
+
+    def test_noise_on_first_ping_does_not_reject_good_pings():
+        # Edge case found by the checker: v1 trusted a bad first ping and dropped the good ones after it
+        rows = [dict(r) for r in CLEAN]
+        rows[0]["lat"] = 37.5080  # first ping 800 m ahead of the real start
+>       assert total(calculate(rows)) == pytest.approx(expected_km(CLEAN[1:]), abs=TOL_KM)
+E       assert 1.668 == 0.8895594131569803 ± 0.01
+E         
+E         comparison failed
+E         Obtained: 1.668
+E         Expected: 0.8895594131569803 ± 0.01
+
+tests/test_regression.py:74: AssertionError
+__________________________ test_duplicate_counts_once __________________________
+
+    def test_duplicate_counts_once():
+        rows = [dict(r) for r in CLEAN]
+        dup = dict(rows[5])
+        dup["lat"] = round(dup["lat"] + 0.00009, 6)  # same timestamp, slightly different reading
+        dup["received_at_utc"] = iso(START + timedelta(seconds=95))  # arrives after later pings
+        rows.append(dup)
+>       assert total(calculate(rows)) == pytest.approx(EXPECTED, abs=TOL_KM)
+E       assert 1.436 == 1.0007543398012493 ± 0.01
+E         
+E         comparison failed
+E         Obtained: 1.436
+E         Expected: 1.0007543398012493 ± 0.01
+
+tests/test_regression.py:83: AssertionError
+________________ test_late_ping_is_placed_by_its_own_timestamp _________________
+
+    def test_late_ping_is_placed_by_its_own_timestamp():
+        rows = [dict(r) for r in CLEAN]
+        rows[3]["received_at_utc"] = iso(START + timedelta(seconds=200))  # arrives last
+>       assert total(calculate(rows)) == pytest.approx(EXPECTED, abs=TOL_KM)
+E       assert 1.668 == 1.0007543398012493 ± 0.01
+E         
+E         comparison failed
+E         Obtained: 1.668
+E         Expected: 1.0007543398012493 ± 0.01
+
+tests/test_regression.py:89: AssertionError
+__________________ test_distance_outside_zone_is_not_counted ___________________
+
+    def test_distance_outside_zone_is_not_counted():
+        inside = track(n=6, lat0=37.5050)
+        outside = track(n=6, lat0=37.4800, start=START + timedelta(minutes=5))  # south of the zone
+        outside = [dict(r, lon=127.0100) for r in outside]
+>       assert total(calculate(inside + outside)) == pytest.approx(expected_km(inside), abs=TOL_KM)
+E       assert 4.886 == 0.5559746332227591 ± 0.01
+E         
+E         comparison failed
+E         Obtained: 4.886
+E         Expected: 0.5559746332227591 ± 0.01
+
+tests/test_regression.py:96: AssertionError
+______________________ test_day_is_cut_at_local_midnight _______________________
+
+    def test_day_is_cut_at_local_midnight():
+        # 23:59:20 local -> 00:00:50 local on 3-4 Nov (14:59:20Z -> 15:00:50Z, all on 3 Nov in UTC)
+        rows = track(n=10, start=datetime(2026, 11, 3, 14, 59, 20, tzinfo=timezone.utc))
+        result = calculate(rows)
+        before_midnight = expected_km(rows[:5])  # segments starting 23:59:20 .. 23:59:50 local
+>       assert result.get(("TEST", "2026-11-03"), 0) == pytest.approx(before_midnight, abs=TOL_KM)
+E       assert 1.001 == 0.4447797065777829 ± 0.01
+E         
+E         comparison failed
+E         Obtained: 1.001
+E         Expected: 0.4447797065777829 ± 0.01
+
+tests/test_regression.py:104: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_regression.py::test_gps_noise_off_road_is_ignored - assert ...
+FAILED tests/test_regression.py::test_gps_noise_too_fast_is_ignored - assert ...
+FAILED tests/test_regression.py::test_noise_on_first_ping_does_not_reject_good_pings
+FAILED tests/test_regression.py::test_duplicate_counts_once - assert 1.436 ==...
+FAILED tests/test_regression.py::test_late_ping_is_placed_by_its_own_timestamp
+FAILED tests/test_regression.py::test_distance_outside_zone_is_not_counted - ...
+FAILED tests/test_regression.py::test_day_is_cut_at_local_midnight - assert 1...
+========================= 7 failed, 1 passed in 0.03s ==========================
