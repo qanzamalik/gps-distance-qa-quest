@@ -10,6 +10,11 @@
 python generate_data.py     # creates data/pings_synthetic.csv (~2,775 pings) + truth file
 python reference_calc.py    # OLD calculation (wrong on purpose) -> km per driver per day
 python checker.py           # QA checker -> reports/checker_report.md
+python fixed_calc.py        # FIXED calculation -> results/before_after.csv
+
+pip install pytest
+python run_tests.py old     # regression tests on OLD calc  -> expected to FAIL
+python run_tests.py fixed   # regression tests on FIXED calc -> expected to PASS
 ```
 
 ## Files
@@ -22,6 +27,10 @@ python checker.py           # QA checker -> reports/checker_report.md
 | `rules.py` | Each case rule as a separate step (dedupe, order, noise, zone, local day) |
 | `checker.py` | QA tool: finds rule breaks, measures km impact of each, shows root-cause rows, self-checks against labels |
 | `reports/checker_report.md` | Latest checker output |
+| `fixed_calc.py` | Corrected calculation + before/after per driver per day |
+| `tests/test_regression.py` | 8 regression checks on hand-built tracks with known answers |
+| `run_tests.py` | Runs the same tests against `old` or `fixed` and saves the output |
+| `results/` | `before_after.csv`, `test_old.txt` (7 fail), `test_fixed.txt` (8 pass) |
 | `data/pings_synthetic.csv` | Pings in arrival order; `fault_type` is the generator's label |
 | `data/truth_km_synthetic.csv` | Expected in-zone km per driver per local day |
 
