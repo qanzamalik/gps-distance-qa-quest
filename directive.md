@@ -2,7 +2,7 @@
 
 Author: Qanza Azam
 Repo: https://github.com/qanzamalik/gps-distance-qa-quest
-Loom: [ADD LOOM LINK]
+Loom: https://www.loom.com/share/19203059c6184aabbdd1158480e9e064
 Case: MUST suggested fictional case (assessment rules, not a live MUST product)
 Data: **100% SYNTHETIC**, generated for this Quest. No real users, drivers, locations or incidents.
 
@@ -136,4 +136,6 @@ AI tool: Claude, used to draft the generator, checker, fix and tests. Each draft
 ## 9. Effort and what existed before
 
 - **Existing work reused:** none. Everything in the repo was created for this Quest.
-- **Actual effort:** [ADD YOUR REAL HOURS] hours over [X] days
+- **Actual effort:** about 14 hours, on 3, 4 and 9 November 2026.
+- - **Compared with the plan:** intent.md planned 8 hours, and the suggested range was 6–10. The extra time went into verifying the AI's work: building the checker's self-check, tracing the five AI mistakes listed above, and cross-checking the expected values. It also covered fixing the repo structure before submission, and recording the Loom.
+- 
